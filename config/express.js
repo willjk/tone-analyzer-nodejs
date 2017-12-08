@@ -28,9 +28,12 @@ module.exports = function(app) {
   app.set('view engine', 'ejs');
   require('ejs').delimiter = '$';
   app.use(bodyParser.urlencoded({
-    extended: true
+    extended: true,
+    limit: '5mb'
   }));
-  app.use(bodyParser.json());
+  app.use(bodyParser.json({
+    limit: '5mb'
+  }));
 
   require('./i18n')(app);
 

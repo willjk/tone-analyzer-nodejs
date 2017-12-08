@@ -5,7 +5,7 @@ declared-services:
     plan: lite
 applications:
 - services:
-  - my-tone-analyzer-service
+  - tone-analyzer-df
   name: tone-analyzer-demo
   command: npm start
   path: .

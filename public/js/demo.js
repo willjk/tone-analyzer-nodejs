@@ -92,6 +92,9 @@ function allReady(thresholds, sampleText) {
     $documentWarning = $('.document--warning'),
     emotionBarGraph_template = emotionBarGraphTemplate.innerHTML, // eslint-disable-line camelcase
     filters_template = filtersTemplate.innerHTML, // eslint-disable-line camelcase
+    submittedFile, 
+    headers,
+    submittedFileTones,
     originalText_template = originalTextTemplate.innerHTML, // eslint-disable-line camelcase
     sentenceRank_template = sentenceRankTemplate.innerHTML, // eslint-disable-line camelcase
     originalTextTooltip_template = originalTextTooltipTemplate.innerHTML, // eslint-disable-line camelcase
@@ -102,6 +105,36 @@ function allReady(thresholds, sampleText) {
     selectedInputSample = $('input[name=rb]:checked').val(),
     selectedLang = 'en',
     lastSentenceID;
+
+  $('input[type=file]').change(function(e) {
+    parseMe(document.getElementById("file").files[0]);
+  });
+
+  showHideUploadFiles(false);
+
+  function parseMe(file) {
+    Papa.parse(file, {
+        header: true,
+        config: {
+          header: true
+        },
+        complete: function(results) {
+            console.log(results); // results appear in dev console
+            submittedFile = $.extend({}, results);
+            if(results.meta.fields && results.meta.fields.length > 0) {
+              headers = results.meta.fields;
+              var tmpHtml = '';
+              for(var i = 0, len = results.meta.fields.length; i < len; i++) {
+                tmpHtml += '<option val="' + i + '">' + results.meta.fields[i] + '</option>';
+              }
+              $('#spreadsheet-headers')[0].innerHTML = tmpHtml;
+            } else {
+
+            }
+            
+        }
+    });
+}
 
   /**
    * Callback function for AJAX post to get tone analyzer data
@@ -484,14 +517,79 @@ function allReady(thresholds, sampleText) {
    * Submit button click event
    */
   $submitButton.click(function() {
+    submitAnalysis($textarea.val());
+  });
+
+  function submitAnalysis(text) {
     $input.show();
     $loading.show();
     $output.hide();
     $error.hide();
     scrollTo($loading);
     lastSentenceID = null;
-    getToneAnalysis($textarea.val());
+    if($('.input--radio:checked').val() == 'own-file') {
+      getToneAnalysisList(submittedFile);
+    } else {
+      getToneAnalysis(text);
+    }
+  }
+
+  function getToneAnalysisList(file) {
+    var tones = [],
+    selectedVal = $('#spreadsheet-headers').val();
+    for(var i = 0, len = file.data.length; i < len; i++) {
+      tones.push(file.data[i][selectedVal])
+    }
+    $.post('/api/tones', {'tones': tones, 'language': 'en' }, tonesCallback)
+    .fail(_error);
+  }
+
+  $('#spreadsheet-headers-output').change(function(){
+    var val = $('#spreadsheet-headers-output').val();
+    if(submittedFile.data[val].stars) {
+      $('#selected-rating')[0].innerText = submittedFile.data[val].stars + ' stars';
+    }
+    $('#document-text')[0].innerHTML = submittedFile.data[val][$('#spreadsheet-headers').val()];
+    toneCallback(submittedFileTones[val].data);
   });
+
+  function tonesCallback(data) {
+    console.log(data);
+    submittedFileTones = data;
+    $input.show();
+    $loading.hide();
+    $error.hide();
+    $output.show();
+    scrollTo($output);
+
+    $('#spreadsheet-headers-output').innerHTML = '';
+    var html = '';
+    for(var i = 0, len = data.length; i < len; i++) {
+      html += '<option value="' + i + '">' + submittedFile.data[i].stars + ' stars - ' + submittedFile.data[i].title + '</option>';
+    }
+    $('#spreadsheet-headers-output')[0].innerHTML = html;
+    if(submittedFile.data[0].stars) {
+      $('#selected-rating')[0].innerText = submittedFile.data[0].stars + ' stars';
+    }
+    $('#document-text')[0].innerHTML = submittedFile.data[0][$('#spreadsheet-headers').val()];
+    toneCallback(submittedFileTones[0].data);
+  }
+
+  function showHideUploadFiles(show) {
+    if(show) {
+      $('#spreadsheet-headers-output').show();
+      $('#upload-file-container').show();
+      $('#selected-rating').show();
+      $('#document-text').show();
+      $('#text-panel').hide();
+    } else {
+      $('#spreadsheet-headers-output').hide();
+      $('#upload-file-container').hide();
+      $('#selected-rating').hide();
+      $('#document-text').hide();
+      $('#text-panel').show();
+    }
+  }
 
   /**
    * Input radio button click event
@@ -505,14 +603,18 @@ function allReady(thresholds, sampleText) {
     if (selectedInputSample === 'own-text'){
       $('input:radio[name=rb-lang][value=en]').prop('checked', true);
       $displayInputRadioLang.removeClass('original-text--tooltip-container_hidden');
+      showHideUploadFiles(false);
+    } else if(selectedInputSample === 'own-file') {
+      showHideUploadFiles(true);
+      $displayInputRadioLang.addClass('original-text--tooltip-container_hidden');
     } else{
       $displayInputRadioLang.addClass('original-text--tooltip-container_hidden');
       if (selectedInputSample === 'review-fr'){
         selectedLang = 'fr';
       }
+      showHideUploadFiles(false);
     }
     updateTextarea($(this).val());
-
   });
 
   /**

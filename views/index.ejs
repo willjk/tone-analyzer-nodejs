@@ -10,6 +10,7 @@
   <link rel="shortcut icon" href="/images/favicon.png" type="image/png">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/extra.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.3.0/papaparse.js"></script>
 </head>
 <body>
   <!-- top level heading -->
@@ -98,9 +99,20 @@
         <label class="base--inline-label input--radio-label" for="input-lang-fr"><$= __('radio-input-lang-fr') $></label>
         <input role="radio" class="base--radio input--radio" type="radio" id="input-own-text" name="rb" value="own-text">
         <label class="base--inline-label input--radio-label" for="input-own-text"><$= __('radio-input-own-text') $></label>
+        <input role="radio" class="base--radio input--radio" type="radio" id="input-file" name="rb" value="own-file">
+        <label class="base--inline-label input--radio-label" for="input-file">Input own file</label>
         <p class="base--p input--description"><$= __('input-description-customer-engagement') $> <a class="base--a" href="http://customer-engagement-demo.mybluemix.net" target="new"><$= __('input-description-customer-engagement-endpoint') $></a>.</p>
+        <div id="upload-file-container">
+          <div>
+            <input type="file" id="file" accepts=".csv" />
+          </div>
+          <div class="input--submit-button-container">
+            <label>Select Text to analyze</label>
+            <select id="spreadsheet-headers"></select>
+          </div>
+        </div>
         <hr class="base--hr input--hr">
-        <div class="panel">
+        <div id="text-panel" class="panel">
           <textarea class="base--textarea input--textarea" rows="7"></textarea>
           <div class="input--choose own-text-language-selector-radio original-text--tooltip-container_hidden">
             <b><$= __('label-choose-lang') $>: </b>
@@ -111,7 +123,7 @@
           </div>
         </div>
         <div class="input--submit-button-container">
-          <button class="base--button input--submit-button" type="submit"><$= __('button-analyze') $></button>
+          <button class="base--button input--submit-button input-button" type="submit"><$= __('button-analyze') $></button>
         </div>
       </div>
 
@@ -126,6 +138,11 @@
       </div>
 
       <div class="output">
+          <div class="input--submit-button-container">
+            <label>Select Row to view</label>
+            <select id="spreadsheet-headers-output"></select>
+            <span id="selected-rating"></span>
+          </div>
         <h2 class="base--h2"><$= __('header-output') $></h2>
         <p class="base--p output--document-description"><$= __('output-description') $></p>
         <p class="base--p output--document-description"><$= __('output-description-interpret') $> <a class="base--a" target="_blank" href="https://www.ibm.com/watson/developercloud/doc/tone-analyzer/understanding-tone.shtml"><$= __('output-description-understand-score') $></a>.</p>
@@ -139,6 +156,12 @@
             </p>
             <div class="document--warning"></div>
             <div class="summary-emotion-graph bar-graph"></div>
+          </div>
+          <div class="original-text--texts-container" style="height: 400px;">
+            <h3>Original Review</h3>
+            <div id="document-text">
+
+            </div>
           </div>
         </div>
 <!--

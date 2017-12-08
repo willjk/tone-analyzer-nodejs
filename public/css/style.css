@@ -1275,13 +1275,13 @@ pre[class*=" language-"] {
   .bar-graph--tooltip br {
     margin-top: 0rem; }
 
-.input--submit-button {
+.input-button {
   width: 100%;
   margin-left: 0%;
   float: left;
   display: block; }
   @media (min-width: 768px) {
-    .input--submit-button {
+    .input-button {
       width: auto;
       float: none;
       margin-left: 0rem;

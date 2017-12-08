@@ -35,6 +35,7 @@
     "codecov": "npm run test && (codecov || true)"
   },
   "dependencies": {
+    "bluebird": "3.5.1",
     "body-parser": "^1.17.2",
     "cf-deployment-tracker-client": "^0.x",
     "dotenv": "^4.0.0",
